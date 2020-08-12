@@ -1,0 +1,26 @@
+{
+  "name": "p12_lazesergiu",
+  "version": "1.0.0",
+  "description": "P12 OC",
+  "main": "index.js",
+  "scripts": {
+      "start": "node index.js"  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lazesergiu04/P12_LazeSergiu.git"
+  },
+  "author": "Laze Sergiu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lazesergiu04/P12_LazeSergiu/issues"
+  },
+  "homepage": "https://github.com/lazesergiu04/P12_LazeSergiu#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  
+    "engines": {
+      "node":"12.16.1" 
+    }
+  }
+
