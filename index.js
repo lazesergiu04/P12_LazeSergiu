@@ -1,12 +1,9 @@
 var express = require('express');
-const app = express();
-let port = process.env.PORT || 5000;
-  
-var path = require('path');
-
 var bodyParser = require('body-parser');
 var pg = require('pg');
-
+let port = process.env.PORT || 5000;
+var path = require('path');
+const app = express();
 
 app.use(express.static('www'));
 app.use(express.static(path.join('www', 'build')));
@@ -16,43 +13,50 @@ app.use(bodyParser.json());
 
 var connectionString = process.env.DATABASE_URL || '5000';
 
-
+if (process.env.DATABASE_URL !== undefined) {
+    pg.defaults.ssl = true;
+  }
 
 var client = new pg.Client(connectionString);
 client.connect();
 
 
+var email = 'Email';
+//perform a query 
+client.query('Select Id, Email From salesforce.Contact', (err, data)=>{
+    var schema = 'salesforce.';
+    email = schema + 'Email';
+})
 
-// Check if the email exist in Salesforce Database
-//if true-> send Salesforce id
-//if false -> create contact and send Salesforce Id
-
-app.get('/contacts/{email}', (req, res)=>{
-    client.query('SELECT Email, SfId From salesforce.Contact',(error, data)=>{
+app.get('/contacts', (req, res)=>{
+    
+    client.query('SELECT Id, SfId'+email+'From salesforce.Contact',(error, data)=>{
         if(data.contains(email)){
-            //send Salesforce Id
-            res.send(sfid);
+            res.send(data.sfid)
         }else{
-            //Create a record in Salesforce 
-            app.put('/', (req, res)=>{
-                res.send(
-                    {
-                        "Name": "Contact"
-                    }, sfid
-                )
+            app.post('/', (req,res)=>{
+                res.send( { 'Name': 'New Contact'});
             })
-
-
         }
-    })
+       
+    });
+});
+
+app.patch('/contacts/update' , (req, res)=>{
     
 })
 
-app.get('/accounts/new', (req, res)=>{
-    rest.api(req).describe('Account', (data)=>{
-        res.render('new', {title: "New Account", data: data})
-    });
-});
+
+
+
+
+
+       
+
+
+    
+
+
 
 
 
