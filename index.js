@@ -23,14 +23,15 @@ client.connect();
 
 var email = 'Email';
 //perform a query 
-client.query('Select Id, Email From salesforce.Contact', (err, data)=>{
-    var schema = 'salesforce.';
-    email = schema + 'Email';
-})
+
 
 app.get('/contacts', (req, res)=>{
+   client.query('Select count(*) From salesforce.Contact', (err, data)=>{
+     res.json(data);
     
-    client.query('SELECT Id, SfId'+email+'From salesforce.Contact',(error, data)=>{
+    });
+    
+  /*  client.query('SELECT Id, SfId'+email+'From salesforce.Contact',(error, data)=>{
         if(data.contains(email)){
             res.send(data.sfid)
         }else{
@@ -39,26 +40,14 @@ app.get('/contacts', (req, res)=>{
             })
         }
        
-    });
+    });**/
+   
 });
+
 
 app.patch('/contacts/update' , (req, res)=>{
     
 })
-
-
-
-
-
-
-       
-
-
-    
-
-
-
-
 
 
 
