@@ -13,6 +13,7 @@ app.use(bodyParser.json());
 
 const { Client } = require('pg');
 const e = require('express');
+const { json } = require('body-parser');
 
 const connectionStr= process.env.DATABASE_URL || 'postgres://expfftnffbdkvh:8afc4a8c06c78c97f53b2e25b8a0581bd6c8fdd7356a0fd06ebc2b3b91912ad8@ec2-18-210-214-86.compute-1.amazonaws.com:5432/d4v5pjn3g2jgag';
 
@@ -33,34 +34,24 @@ app.get('/contacts', (req, res)=>{
 })
 
 //Get the Contact records ( email, id, sfId)
+var emailInDB =true;
+var email;
+var lastname;
 
-app.get('/contact', (req, res)=>{
-  console.log(req.param('email'));
-  var email = req.param('email');
-  var lastname =req.param('lastname');
-  
-  client.query(`Select sfid from salesforce.Contact Where email='${email}'`, (err, data)=>{
-    if(data !== undefined){
-      if(data.rowCount == 0){ 
-         console.log('Create record executed --');
-      app.post(`/contact`,(req, res)=>{
-          client.query(`Insert Into salesforce.Contact (LastName, Email) 
-          Values('${lastname}', '${email}')`,(err, data)=>{
-            console.log('test');
-            res.json(data.rows[0].sfid);
-          })
-        } )
-      }else{
-        res.json(data.rows[0].sfid);
-      }  
-    }else{
-      console.log(' data undefined');
-    }
-     
-  })
-    });
-
-
+    app.put(`/contact`,(req, res)=>{
+      email = req.param('email');
+     lastname =req.param('lastname');
+      client.query(`Select sfid from salesforce.Contact Where email='${email}'`, (err, data)=>{
+        if(data !== undefined & data.rowCount ==0){
+        client.query(`Insert Into salesforce.Contact (LastName, Email) Values(${lastname},${email})`,
+        (err, data)=>{
+          console.log('test create record');
+          res.send(data.rows[0].sfid);
+        })
+      }
+        
+        })
+      } )
 
     //Update the modified contacts
     app.patch('/contacts', (req, res)=>{
