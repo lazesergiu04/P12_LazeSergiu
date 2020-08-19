@@ -27,7 +27,7 @@ const client = new Client({
 
 client.connect();
 
-app.get('/contacts', (req, res)=>{
+app.get('/', (req, res)=>{
   client.query(`Select * from salesforce.Contact`, (err, data)=>{
     res.json(data);
   })
@@ -38,20 +38,29 @@ var emailInDB =true;
 var email;
 var lastname;
 
-    app.put(`/contact`,(req, res)=>{
-      email = req.param('email');
-     lastname =req.param('lastname');
-      client.query(`Select sfid from salesforce.Contact Where email='${email}'`, (err, data)=>{
-        if(data !== undefined & data.rowCount ==0){
-        client.query(`Insert Into salesforce.Contact (LastName, Email) Values(${lastname},${email})`,
-        (err, data)=>{
-          console.log('test create record');
-          res.send(data.rows[0].sfid);
-        })
+app.get('/contact', (req, res)=>{
+  console.log(req.param('email'));
+  var email = req.param('email');
+  var lastname =req.param('lastname');
+  client.query(`Select sfid from salesforce.Contact Where email='${email}'`, (err, data)=>{
+    if(data !== undefined){
+      if(data.rowCount == 0){ 
+      
+         console.log('Create record executed --');
+         client.query(`Insert Into salesforce.Contact (Email) Values('${email}')`, 
+         (err, data)=>{
+            console.log('test');
+            res.json(data.rows[0].id);
+          })
+        } 
+      }else{
+        res.json(data.rows[0].sfid);
       }
-        
-        })
-      } )
+  
+    })
+  })
+      
+     
 
     //Update the modified contacts
     app.patch('/contacts', (req, res)=>{
