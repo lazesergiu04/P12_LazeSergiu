@@ -15,8 +15,8 @@ const { Client } = require('pg');
 const e = require('express');
 
 
-const connectionStr= process.env.DATABASE_URL || 'postgres://expfftnffbdkvh:8afc4a8c06c78c97f53b2e25b8a0581bd6c8fdd7356a0fd06ebc2b3b91912ad8@ec2-18-210-214-86.compute-1.amazonaws.com:5432/d4v5pjn3g2jgag';
-
+const connectionStr= process.env.DATABASE_URL || 
+'postgres://zzejcrgkxtyuqc:dbb08041344933982fbb39023fd334bf359b917f6f25d1d20064cd10c7f3a4d8@ec2-54-91-178-234.compute-1.amazonaws.com:5432/dsv2l3k3vlkv'
 
 const client = new Client({
   connectionString:connectionStr,
