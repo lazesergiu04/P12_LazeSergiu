@@ -13,10 +13,11 @@ app.use(bodyParser.json());
 
 const { Client } = require('pg');
 const e = require('express');
+const { networkInterfaces } = require('os');
 
 
 const connectionStr= process.env.DATABASE_URL || 
-'postgres://zzejcrgkxtyuqc:dbb08041344933982fbb39023fd334bf359b917f6f25d1d20064cd10c7f3a4d8@ec2-54-91-178-234.compute-1.amazonaws.com:5432/dsv2l3k3vlkv';
+'postgres://wdevvykplmbaeb:1a4c4fc6b12cc7c6e15e35ea1b2942bfb58804756bc897b67ed05ba9ef684507@ec2-54-147-54-83.compute-1.amazonaws.com:5432/d4bpsl1kd0k5a8';
 
 const client = new Client({
   connectionString:connectionStr,
@@ -39,21 +40,26 @@ app.get('/', (req, res)=>{
 app.get('/contact', (req, res)=>{
   console.log(req.param('email'));
   var email = req.param('email');
-  var name =req.param('name');
+  var lastname= req.param('lastname');
   client.query(`Select sfid from salesforce.Contact Where email='${email}'`, (err, data)=>{
     if(data !== undefined){
       console.log(data.rowCount);
       if(data.rowCount == 0){ 
          console.log('Create record executed --');
-         client.query(`Insert Into salesforce.Contact (name,email) Values('${name}','${email}')`);
-         console.log('New record created with Name:' + name +' and email:' + email);
-         client.query(`Select id from salesforce.contact where name='${name}'`,(err, data)=>{
-           res.json(data.rows[0].id);
-         });
-        
+         client.query(`Insert Into salesforce.Contact (lastname,email) Values('${lastname}','${email}')`, (err,newData)=>{
+           if(newData.rowCount== 0){
+             res.send('The contact cannot be created, please check the data');
+           }else{
+         client.query(`Select sfid,id from salesforce.contact where email='${email}'`,(err, data)=>{
+          res.json(data);
+        }, 
+           
+         );
+         }
+        });
       }else{
         res.json(data.rows[0].sfid);
-      }
+      }//add sf id
     }
     })
   })
