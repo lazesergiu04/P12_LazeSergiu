@@ -33,8 +33,9 @@ app.get('/', (req, res)=>{
   })
 })
 
-//Get the Contact records ( email, id, sfId)
 
+//Pass the email as a param, if the email is in Salesforce, it will return the sfid
+  //if not, a new record will be created with that email % name is required
 app.get('/contact', (req, res)=>{
   console.log(req.param('email'));
   var email = req.param('email');
@@ -56,11 +57,12 @@ app.get('/contact', (req, res)=>{
     }
     })
   })
-  // at the moment, it does insert a the fields that are specified
+  
       
      
 
     //Update the modified contacts
+    //Is a way to update record automatically, without adding each field? !!
     app.patch('/contacts', (req, res)=>{
       var sfid = req.param('sfid');
       
@@ -71,8 +73,8 @@ app.get('/contact', (req, res)=>{
 
     })
 
-    //Dectivate in Salesforce the deteleted contacts??
-    //I created a checkbox IsActive that will be assign to false
+    //Dectivate in Salesforce the deteleted contacts
+    //Based on the salesforce id, the contact in Salesforce is deactivated
     app.patch('/contacts/deactivate',(req, res)=>{
       var sfid= req.param('sfid');
       console.log(sfid + '-- deactivate contact ');
@@ -83,21 +85,44 @@ app.get('/contact', (req, res)=>{
             res.send(data.fields[1].name+ ':' +data.rows[0].isactive__c );
           })
       })
-
-      app.patch('/contract', (req, res)=>{
-        var accName = req.body.name;
-        var accId=0;
-        client.query(`Select id from salesforce.account where name='${accName}'`, (err, accData)=>{
-         accId=accData.rows[0].id;
-         console.log(accId);
-        });
-          client.query(`Update salesforce.contract set Status=Activated where accountId='${accId}'`, (err, ctrData)=>{
-            res.json(ctrData);
+ 
+      // Update contract fields 
+      //Need to pass all the fields that can be maped
+      app.put('/contract', (req, res)=>{
+        let accName= req.body.name;
+        let accSfid= '';
+        let ctrTerm= 6;
+          client.query(`Select sfid from salesforce.account where name='${accName}'`, (errs, accData)=>{
+            accSfid= accData.rows[0].sfid;
+          client.query(`update salesforce.contract set contractterm='${ctrTerm}' where accountid= '${accSfid}'`, (err, ctrData)=>{
+            
+            if(ctrData.rowCount!==0){
+              res.send('Contract updated! ')
+            }else{
+              res.send('Something went wrong');
+            }
           });
-          
+          });
+        });
+      
 
-        
-        })
+        // Create a new Contract record based on the information in the body
+        app.post('/contract/create', (req, res)=>{
+          var accName = req.body.name;
+          let date = req.body.date;
+          let ctrTerm = req.body.contractTerm;
+          let accId = '';
+          client.query(`Select sfid from salesforce.account where name='${accName}'`,(err,accData)=>{
+            accId = accData.rows[0].sfid;
+            console.log(accId);
+           
+            client.query(`Insert into salesforce.contract (accountid, startdate, contractterm) Values ('${accId}', '${date}', '${ctrTerm}')`,
+            (err, ctrData)=>{
+              res.json(ctrData);
+              })
+            })
+
+          })
     
     
 
