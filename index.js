@@ -28,6 +28,8 @@ const client = new Client({
 
 client.connect();
 
+
+
 app.get('/', (req, res)=>{
   client.query(`Select * from salesforce.Contact`, (err, data)=>{
     res.json(data);
@@ -38,28 +40,24 @@ app.get('/', (req, res)=>{
 //Pass the email as a param, if the email is in Salesforce, it will return the sfid
   //if not, a new record will be created with that email % name is required
 app.get('/contact', (req, res)=>{
-  console.log(req.param('email'));
   var email = req.param('email');
   var lastname= req.param('lastname');
-  client.query(`Select sfid from salesforce.Contact Where email='${email}'`, (err, data)=>{
+  client.query(`Select sfid,id from salesforce.Contact Where email='${email}'`, (err, data)=>{
     if(data !== undefined){
-      console.log(data.rowCount);
       if(data.rowCount == 0){ 
-         console.log('Create record executed --');
          client.query(`Insert Into salesforce.Contact (lastname,email) Values('${lastname}','${email}')`, (err,newData)=>{
            if(newData.rowCount== 0){
-             res.send('The contact cannot be created, please check the data');
+             res.send('The contact could not be created, please check the data');
            }else{
          client.query(`Select sfid,id from salesforce.contact where email='${email}'`,(err, data)=>{
-          res.json(data);
-        }, 
-           
+          res.json(data.rows[0].id);
+        },
          );
          }
         });
       }else{
-        res.json(data.rows[0].sfid);
-      }//add sf id
+        res.json(data.rows[0]);
+      }
     }
     })
   })
@@ -69,22 +67,33 @@ app.get('/contact', (req, res)=>{
 
     //Update the modified contacts
     //Is a way to update record automatically, without adding each field? !!
-    app.patch('/contacts', (req, res)=>{
-      var sfid = req.param('sfid');
-      
-      client.query(`Update  salesforce.Contact where Sfid = '${sfid}'`,(err,data)=>{
+    app.patch('/contact', (req, res)=>{
+      var contactId= req.param('id');
+      //Fields 
+      let name = req.body.name;
+      let lastname= req.body.lastname;
+      let email = req.body.email;
+      let mobile = req.body.mobilephone;
+      let isActive = req.body.isActive;
+        if(contactId !== null){
+          client.query(`Update salesforce.Contact Set (name,lastname,email,mobilephone,isActive__c) 
+                        Values('${name}','${lastname}','${email}', '${mobile}', '${isActive}')
+                        Where id='${contactId}'`, (err,conData)=>{
+            res.send(conData);
+            })
+          }else{
+            res.send('This id is not valid');
+          }
+          })
         
-        res.json('Update completed');
-      })
-
-    })
+    
 
     //Dectivate in Salesforce the deteleted contacts
     //Based on the salesforce id, the contact in Salesforce is deactivated
     app.patch('/contacts/deactivate',(req, res)=>{
-      var sfid= req.param('sfid');
-      console.log(sfid + '-- deactivate contact ');
-      client.query(`Update salesforce.Contact Set isActive__c=false where sfid='${sfid}'`);
+      var id= req.param('id');
+      console.log(id + '-- deactivate contact ');
+      client.query(`Update salesforce.Contact Set isActive__c=false where id='${id}'`);
       
           client.query(`Select sfid, isActive__c from salesforce.contact where sfid='${sfid}'`, (err,data)=>{
             
