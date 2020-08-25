@@ -96,7 +96,7 @@ app.get('/contact', (req, res)=>{
 
     //Dectivate in Salesforce the deteleted contacts
     //Based on the salesforce id, the contact in Salesforce is deactivated
-    app.patch('/contacts/deactivate',(req, res)=>{
+    app.patch('/contact/deactivate',(req, res)=>{
       var id= req.param('id');
       console.log(id + '-- deactivate contact ');
       client.query(`Update salesforce.Contact Set isActive__c=false where id='${id}'`, (err, data)=>{
