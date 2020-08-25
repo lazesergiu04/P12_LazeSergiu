@@ -101,15 +101,20 @@ app.get('/contact', (req, res)=>{
           })
       })
  
-      // Update contract fields 
-      //Need to pass all the fields that can be maped
+      // Update contract fields based on the account name
       app.put('/contract', (req, res)=>{
         let accName= req.body.name;
         let accSfid= '';
-        let ctrTerm= 6;
+        let ctrTerm=  req.body.contractterm;
+        let startDate = req.body.startDate;
+        let isDeleted = req.body.isDeleted;
+        let status= req.body.status;
           client.query(`Select sfid from salesforce.account where name='${accName}'`, (errs, accData)=>{
             accSfid= accData.rows[0].sfid;
-          client.query(`update salesforce.contract set contractterm='${ctrTerm}' where accountid= '${accSfid}'`, (err, ctrData)=>{
+
+          client.query(`Update salesforce.contract set (contractterm, startdate, status, isdeleted)
+          Values('${ctrTerm}', '${startDate}', '${status}', '${isDeleted}')
+           where accountid= '${accSfid}'`, (err, ctrData)=>{
             
             if(ctrData.rowCount!==0){
               res.send('Contract updated! ')
