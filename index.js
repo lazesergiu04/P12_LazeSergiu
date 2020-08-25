@@ -66,25 +66,31 @@ app.get('/contact', (req, res)=>{
      
 
     //Update the modified contacts
-    //Is a way to update record automatically, without adding each field? !!
-    app.patch('/contact', (req, res)=>{
+ 
+    app.put('/contact', (req, res)=>{
+      console.log('Update contact running');
       var contactId= req.param('id');
-      //Fields 
-      let name = req.body.name;
-      let lastname= req.body.lastname;
-      let email = req.body.email;
-      let mobile = req.body.mobilephone;
-      let isActive = req.body.isActive;
-        if(contactId !== null){
-          client.query(`Update salesforce.Contact Set (name,lastname,email,mobilephone,isActive__c) 
-                        Values('${name}','${lastname}','${email}', '${mobile}', '${isActive}')
-                        Where id='${contactId}'`, (err,conData)=>{
-            res.send(conData);
-            })
-          }else{
-            res.send('This id is not valid');
-          }
-          })
+      console.log(contactId);
+        //Fields 
+        let name = req.body.name;
+        let lastname= req.body.lastname;
+        let email = req.body.email;
+        let mobile = req.body.mobilephone;
+        
+        console.log(name +' '+ lastname) ;
+            client.query(`Update salesforce.Contact Set name='${name}',lastname='${lastname}',
+                          email ='${email}', mobilephone='${mobile}'
+                          Where id='${contactId}'`, (err,conData)=>{
+                            console.log('test');
+                if(conData.rowCount !==0){
+                  res.json(conData);
+                }else{
+                  res.send('Something went wrong');
+                }
+              
+              });
+            });
+      
         
     
 
@@ -93,50 +99,52 @@ app.get('/contact', (req, res)=>{
     app.patch('/contacts/deactivate',(req, res)=>{
       var id= req.param('id');
       console.log(id + '-- deactivate contact ');
-      client.query(`Update salesforce.Contact Set isActive__c=false where id='${id}'`);
+      client.query(`Update salesforce.Contact Set isActive__c=false where id='${id}'`, (err, data)=>{
+        if(data.rowCount !==0){
+        res.json(data);
+        }else{
+          res.send('Something went wrong');
+        }
+      });
       
-          client.query(`Select sfid, isActive__c from salesforce.contact where sfid='${sfid}'`, (err,data)=>{
-            
-            res.send(data.fields[1].name+ ':' +data.rows[0].isactive__c );
-          })
-      })
+          });
+    
  
       // Update contract fields based on the account name
       app.put('/contract', (req, res)=>{
-        let accName= req.body.name;
+        let accName= req.param('name');
         let accSfid= '';
         let ctrTerm=  req.body.contractterm;
-        let startDate = req.body.startDate;
-        let isDeleted = req.body.isDeleted;
+        let startDate = req.body.startdate;
         let status= req.body.status;
+        console.log(accName);
+        console.log(accSfid +' '+ startDate+' '+ status);
           client.query(`Select sfid from salesforce.account where name='${accName}'`, (errs, accData)=>{
             accSfid= accData.rows[0].sfid;
 
-          client.query(`Update salesforce.contract set (contractterm, startdate, status, isdeleted)
-          Values('${ctrTerm}', '${startDate}', '${status}', '${isDeleted}')
+          client.query(`Update salesforce.contract set contractterm='${ctrTerm}', startdate='${startDate}',
+           status='${status}'
            where accountid= '${accSfid}'`, (err, ctrData)=>{
+              res.json(ctrData);
             
-            if(ctrData.rowCount!==0){
-              res.send('Contract updated! ')
-            }else{
-              res.send('Something went wrong');
-            }
+            })
           });
           });
-        });
+      
       
 
         // Create a new Contract record based on the information in the body
         app.post('/contract/create', (req, res)=>{
           var accName = req.body.name;
           let date = req.body.date;
-          let ctrTerm = req.body.contractTerm;
+          let ctrTerm = req.body.contractterm;
           let accId = '';
           client.query(`Select sfid from salesforce.account where name='${accName}'`,(err,accData)=>{
             accId = accData.rows[0].sfid;
             console.log(accId);
-           
-            client.query(`Insert into salesforce.contract (accountid, startdate, contractterm) Values ('${accId}', '${date}', '${ctrTerm}')`,
+           console.log(accName,date,ctrTerm);
+            client.query(`Insert into salesforce.contract (accountid, startdate, contractterm) 
+                          Values ('${accId}', '${date}', '${ctrTerm}')`,
             (err, ctrData)=>{
               res.json(ctrData);
               })
