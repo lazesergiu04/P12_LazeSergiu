@@ -151,6 +151,27 @@ app.get('/contact', (req, res)=>{
             })
 
           })
+
+          // endpoing for update account details
+        app.port('/account' ,(req, res)=>{
+          accName=  req.param('name');
+          accShipState= req.body.shippingstate;
+          accShipPostal = req.body.postalcode;
+          accShipStreet = req.body.shippingstreet;
+          accShipContry = req.body.shippingcontry;
+          accShipCity= req.body.shippingcity;
+          client.query(`Update salesforce.account Set shippingstate='${accShipState}', shippingcountry='${accShipContry}',
+          shippingcity='${accShipCity}', shippingstreet='${accShipStreet}', shippingpostalcode ='${accShipPostal}'`, (err, data)=>{
+            if(data.rowCount !== 0){
+              res.json(data);
+            }else{
+              res.send('Something went wrong');
+            }
+          })
+
+
+        })
+
     
     
 
